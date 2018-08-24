@@ -240,13 +240,13 @@
 || 
 || ===================================================
 || Enter command: || [Command entered:  delete 3]
-|| The person index provided is invalid
+|| Index 3: The person index provided is invalid
 || ===================================================
 || Enter command: || [Command entered:  delete 2]
 || Deleted Person: Charlie Dickson  Phone Number: 333333  Email: charlie.d@nus.edu.sg
 || ===================================================
 || Enter command: || [Command entered:  delete 2]
-|| Person could not be found in address book
+|| Index 2: Person could not be found in address book
 || ===================================================
 || Enter command: || [Command entered:  list]
 || 	1. Adam Brown  Phone Number: 111111  Email: adam@gmail.com
@@ -274,6 +274,44 @@
 || 	2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
 || 
 || 2 persons found!
+|| ===================================================
+|| Enter command: || [Command entered:  add test multipledelete1 p/1234 e/testmd1@gmail.com]
+|| New person added: test multipledelete1, Phone: 1234, Email: testmd1@gmail.com
+|| ===================================================
+|| Enter command: || [Command entered:  add test multipledelete2 p/12345 e/testmd2@gmail.com]
+|| New person added: test multipledelete2, Phone: 12345, Email: testmd2@gmail.com
+|| ===================================================
+|| Enter command: || [Command entered:  add test multipledelete3 p/123456 e/testmd3@gmail.com]
+|| New person added: test multipledelete3, Phone: 123456, Email: testmd3@gmail.com
+|| ===================================================
+|| Enter command: || [Command entered:  list]
+|| 	1. Betsy Choo  Phone Number: 222222  Email: benchoo@nus.edu.sg
+|| 	2. Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
+|| 	3. test multipledelete1  Phone Number: 1234  Email: testmd1@gmail.com
+|| 	4. test multipledelete2  Phone Number: 12345  Email: testmd2@gmail.com
+|| 	5. test multipledelete3  Phone Number: 123456  Email: testmd3@gmail.com
+|| 
+|| 5 persons found!
+|| ===================================================
+|| Enter command: || [Command entered:  delete 2 4]
+|| Deleted Person: Dickson Ee  Phone Number: 444444  Email: dickson@nus.edu.sg
+|| Deleted Person: test multipledelete2  Phone Number: 12345  Email: testmd2@gmail.com
+|| ===================================================
+|| Enter command: || [Command entered:  delete 1 2 4]
+|| Deleted Person: Betsy Choo  Phone Number: 222222  Email: benchoo@nus.edu.sg
+|| Index 2: Person could not be found in address book
+|| Index 4: Person could not be found in address book
+|| ===================================================
+|| Enter command: || [Command entered:  list]
+|| 	1. test multipledelete1  Phone Number: 1234  Email: testmd1@gmail.com
+|| 	2. test multipledelete3  Phone Number: 123456  Email: testmd3@gmail.com
+|| 
+|| 2 persons found!
+|| ===================================================
+|| Enter command: || [Command entered:  delete 100 20 1]
+|| Deleted Person: test multipledelete1  Phone Number: 1234  Email: testmd1@gmail.com
+|| Index 100: The person index provided is invalid
+|| Index 20: The person index provided is invalid
 || ===================================================
 || Enter command: || [Command entered:  clear]
 || Address book has been cleared!

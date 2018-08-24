@@ -370,7 +370,7 @@ public class AddressBook {
             case COMMAND_LIST_WORD:
                 return executeListAllPersonsInAddressBook();
             case COMMAND_DELETE_WORD:
-                return executeDeletePerson(commandArgs);
+                return executeDeletePeople(commandArgs);
             case COMMAND_CLEAR_WORD:
                 return executeClearAddressBook();
             case COMMAND_HELP_WORD:
@@ -493,17 +493,25 @@ public class AddressBook {
      * @param commandArgs full command args string from the user
      * @return feedback display message for the operation result
      */
-    private static String executeDeletePerson(String commandArgs) {
-        if (!isDeletePersonArgsValid(commandArgs)) {
+    private static String executeDeletePeople(String commandArgs) {
+        if (!isDeletePeopleArgsValid(commandArgs)) {
             return getMessageForInvalidCommandInput(COMMAND_DELETE_WORD, getUsageInfoForDeleteCommand());
         }
-        final int targetVisibleIndex = extractTargetIndexFromDeletePersonArgs(commandArgs);
-        if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
-            return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
+        final Set<Integer> idsToDelete = extractTargetIndexesFromDeletePeopleArgs(commandArgs);
+        String message = "";
+        
+        for (Integer idToDelete: idsToDelete) {
+            if (!isDisplayIndexValidForLastPersonListingView(idToDelete)) {
+                message = concatMessage(message, "Index " + idToDelete + ": " + MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+                continue;
+            }
+
+            final HashMap<String, String> targetInModel = getPersonByLastVisibleIndex(idToDelete);
+            String currMsg = deletePersonFromAddressBook(targetInModel) ? getMessageForSuccessfulDelete(targetInModel) // success
+                    : "Index " + idToDelete + ": " + MESSAGE_PERSON_NOT_IN_ADDRESSBOOK; // not found
+            message = concatMessage(message, currMsg);
         }
-        final HashMap<String, String> targetInModel = getPersonByLastVisibleIndex(targetVisibleIndex);
-        return deletePersonFromAddressBook(targetInModel) ? getMessageForSuccessfulDelete(targetInModel) // success
-                : MESSAGE_PERSON_NOT_IN_ADDRESSBOOK; // not found
+        return message;
     }
 
     /**
@@ -512,10 +520,15 @@ public class AddressBook {
      * @param rawArgs raw command args string for the delete person command
      * @return whether the input args string is valid
      */
-    private static boolean isDeletePersonArgsValid(String rawArgs) {
+    private static boolean isDeletePeopleArgsValid(String rawArgs) {
         try {
-            final int extractedIndex = Integer.parseInt(rawArgs.trim()); // use standard libraries to parse
-            return extractedIndex >= DISPLAYED_INDEX_OFFSET;
+            final ArrayList<String> stringIdsToDelete = new ArrayList<>(Arrays.asList(rawArgs.trim().split("\\s+")));
+            for (String idToDelete : stringIdsToDelete) {
+                if (Integer.parseInt(idToDelete.trim()) < DISPLAYED_INDEX_OFFSET) {
+                    return false;
+                }
+            }
+            return true;
         } catch (NumberFormatException nfe) {
             return false;
         }
@@ -527,24 +540,29 @@ public class AddressBook {
      * @param rawArgs raw command args string for the delete person command
      * @return extracted index
      */
-    private static int extractTargetIndexFromDeletePersonArgs(String rawArgs) {
-        return Integer.parseInt(rawArgs.trim());
+    private static Set<Integer> extractTargetIndexesFromDeletePeopleArgs(String rawArgs) {
+        final ArrayList<String> stringIdsToDelete = new ArrayList<>(Arrays.asList(rawArgs.trim().split("\\s+")));
+        Set<Integer> idsToDelete = new HashSet<>();
+        for (int i = 0; i < stringIdsToDelete.size(); i++) {
+            idsToDelete.add(Integer.parseInt(stringIdsToDelete.get(i)));
+        }
+        return idsToDelete;
     }
-
+    
     /**
      * Checks that the given index is within bounds and valid for the last shown person list view.
      *
-     * @param index to check
+     * @param idToDelete to check
      * @return whether it is valid
      */
-    private static boolean isDisplayIndexValidForLastPersonListingView(int index) {
-        return index >= DISPLAYED_INDEX_OFFSET && index < latestPersonListingView.size() + DISPLAYED_INDEX_OFFSET;
+    private static boolean isDisplayIndexValidForLastPersonListingView(Integer idToDelete) {
+        return idToDelete >= DISPLAYED_INDEX_OFFSET && idToDelete < latestPersonListingView.size() + DISPLAYED_INDEX_OFFSET;
     }
-
+    
     /**
      * Constructs a feedback message for a successful delete person command execution.
      *
-     * @see #executeDeletePerson(String)
+     * @see #executeDeletePeople(String)
      * @param deletedPerson successfully deleted
      * @return successful delete person feedback message
      */
@@ -1156,6 +1174,21 @@ public class AddressBook {
      */
     private static ArrayList<String> splitByWhitespace(String toSplit) {
         return new ArrayList<>(Arrays.asList(toSplit.trim().split("\\s+")));
+    }
+
+
+    /**
+     * Concatenate a string with another string in a format that fits the UI.
+     * 
+     * @param existingMsg it will be "" if it is the first msg.
+     * @param msgToConcat the message to be concatenated.
+     * @return  string that is concatenated.
+     */
+    private static String concatMessage(String existingMsg, String msgToConcat) {
+        if (existingMsg == "") {
+            return msgToConcat;
+        }
+        return existingMsg + "\n" + LINE_PREFIX + msgToConcat;
     }
 
 }
