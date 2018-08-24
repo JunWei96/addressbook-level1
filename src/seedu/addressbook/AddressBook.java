@@ -488,7 +488,7 @@ public class AddressBook {
     }
 
     /**
-     * Deletes person identified using last displayed index.
+     * Deletes people identified using last displayed index.
      *
      * @param commandArgs full command args string from the user
      * @return feedback display message for the operation result
@@ -497,21 +497,29 @@ public class AddressBook {
         if (!isDeletePeopleArgsValid(commandArgs)) {
             return getMessageForInvalidCommandInput(COMMAND_DELETE_WORD, getUsageInfoForDeleteCommand());
         }
-        final Set<Integer> idsToDelete = extractTargetIndexesFromDeletePeopleArgs(commandArgs);
+        final Set<Integer> indexesToDelete = extractTargetIndexesFromDeletePeopleArgs(commandArgs);
         String message = "";
         
-        for (Integer idToDelete: idsToDelete) {
-            if (!isDisplayIndexValidForLastPersonListingView(idToDelete)) {
-                message = concatMessage(message, "Index " + idToDelete + ": " + MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
-                continue;
-            }
-
-            final HashMap<String, String> targetInModel = getPersonByLastVisibleIndex(idToDelete);
-            String currMsg = deletePersonFromAddressBook(targetInModel) ? getMessageForSuccessfulDelete(targetInModel) // success
-                    : "Index " + idToDelete + ": " + MESSAGE_PERSON_NOT_IN_ADDRESSBOOK; // not found
-            message = concatMessage(message, currMsg);
+        for (Integer indexToDelete: indexesToDelete) {
+            message = concatMessage(message, executeDeletePerson(indexToDelete));
         }
         return message;
+    }
+
+    /**
+     * Deletes person identified using last displayed index.
+     *
+     * @param indexToDelete the display index of the to delete
+     * @return feedback message from deleting this person
+     */
+    private static String executeDeletePerson(Integer indexToDelete) {
+        if (!isDisplayIndexValidForLastPersonListingView(indexToDelete)) {  
+            return "Index " + indexToDelete + ": " + MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
+        }
+
+        final HashMap<String, String> targetInModel = getPersonByLastVisibleIndex(indexToDelete);
+        return deletePersonFromAddressBook(targetInModel) ? getMessageForSuccessfulDelete(targetInModel) // success
+                : "Index " + indexToDelete + ": " + MESSAGE_PERSON_NOT_IN_ADDRESSBOOK; // not found
     }
 
     /**
@@ -522,9 +530,9 @@ public class AddressBook {
      */
     private static boolean isDeletePeopleArgsValid(String rawArgs) {
         try {
-            final ArrayList<String> stringIdsToDelete = new ArrayList<>(Arrays.asList(rawArgs.trim().split("\\s+")));
-            for (String idToDelete : stringIdsToDelete) {
-                if (Integer.parseInt(idToDelete.trim()) < DISPLAYED_INDEX_OFFSET) {
+            final ArrayList<String> stringindexesToDelete = new ArrayList<>(Arrays.asList(rawArgs.trim().split("\\s+")));
+            for (String indexToDelete : stringindexesToDelete) {
+                if (Integer.parseInt(indexToDelete.trim()) < DISPLAYED_INDEX_OFFSET) {
                     return false;
                 }
             }
@@ -541,22 +549,22 @@ public class AddressBook {
      * @return extracted index
      */
     private static Set<Integer> extractTargetIndexesFromDeletePeopleArgs(String rawArgs) {
-        final ArrayList<String> stringIdsToDelete = new ArrayList<>(Arrays.asList(rawArgs.trim().split("\\s+")));
-        Set<Integer> idsToDelete = new HashSet<>();
-        for (int i = 0; i < stringIdsToDelete.size(); i++) {
-            idsToDelete.add(Integer.parseInt(stringIdsToDelete.get(i)));
+        final ArrayList<String> stringindexesToDelete = new ArrayList<>(Arrays.asList(rawArgs.trim().split("\\s+")));
+        Set<Integer> indexesToDelete = new HashSet<>();
+        for (int i = 0; i < stringindexesToDelete.size(); i++) {
+            indexesToDelete.add(Integer.parseInt(stringindexesToDelete.get(i)));
         }
-        return idsToDelete;
+        return indexesToDelete;
     }
     
     /**
      * Checks that the given index is within bounds and valid for the last shown person list view.
      *
-     * @param idToDelete to check
+     * @param indexToDelete to check
      * @return whether it is valid
      */
-    private static boolean isDisplayIndexValidForLastPersonListingView(Integer idToDelete) {
-        return idToDelete >= DISPLAYED_INDEX_OFFSET && idToDelete < latestPersonListingView.size() + DISPLAYED_INDEX_OFFSET;
+    private static boolean isDisplayIndexValidForLastPersonListingView(Integer indexToDelete) {
+        return indexToDelete >= DISPLAYED_INDEX_OFFSET && indexToDelete < latestPersonListingView.size() + DISPLAYED_INDEX_OFFSET;
     }
     
     /**
